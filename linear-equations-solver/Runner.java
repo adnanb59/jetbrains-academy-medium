@@ -2,7 +2,29 @@ import java.io.*;
 import java.util.*;
 import solver.elements.*;
 
-public class Main {
+public class Runner {
+    public static List<Double> convertStringToComplex(String s) {
+        String REGEX = "^(-?\\d*(\\.\\d+)?)*?(((\\+|-)?(\\d*(\\.\\d+)?)?)i)??$";
+        Pattern p = Pattern.compile(REGEX);
+        Matcher m = p.matcher(s);
+        List<Double> ret = new ArrayList<>();
+        double re, im;
+        if (m.matches()) {
+            // Grab real part
+            // Group 1 is entire, Group 2 is decimal portion
+            re = m.group(1) == null ? 0.0 : Double.parseDouble(m.group(1));
+
+            // Grab imaginary part
+            // Group 3 is entire (including +/- and i), 4 is without i
+            // 5 is +/- symbol (or none), 6 is without i and +/-
+            // 7 is decimal
+            im = m.group(3) == null ? 0.0 : (m.group(6).isBlank() || m.group(6).isEmpty() ? 1.0 : Double.parseDouble(m.group(6)));
+            im *= (m.group(5) != null && m.group(5).equals("-")) ? -1 : 1;
+            ret = List.of(re, im);
+        }
+        return ret;
+    }
+
     public static void main(String[] args) {
         // -- ARGUMENT PROCESSING --
         String inFile = null;
@@ -42,16 +64,16 @@ public class Main {
             // and then store the created equation in the matrix
             Matrix m = new Matrix();
             int lines = 0;
-            LinearEquation l;
-            while (in.hasNextLine() && lines < eqns) {
-                // For each input line processed, create a new equation
-                l = new LinearEquation(vars);
+            while (in.hasNext() && lines < eqns) {
+                List<ComplexNumber> equations = new ArrayList<>();
+                // Go through values for a line and add convert strings to Complex Numbers, add
+                // those values to a list then create a linear equation and add it to the matrix
                 for (int i = 0; i <= vars; i++) {
-                    if (in.hasNextDouble()) {
-                        if (i == vars) l.addSolution(in.nextDouble());
-                        else l.addCoefficient(in.nextDouble());
-                    } else throw new IllegalArgumentException("Not enough coefficients provided for equation");
+                    String curr = in.next();
+                    ComplexNumber c = new ComplexNumber(convertStringToComplex(curr));
+                    equations.add(c);
                 }
+                LinearEquation l = new LinearEquation(vars, equations);
                 m.addEquation(l);
                 lines++;
             }
@@ -71,9 +93,9 @@ public class Main {
                     break;
                 case ONE_SOLUTION:
                     System.out.print("The solution is: (");
-                    List<Double> solns = m.getSolutions();
+                    List<ComplexNumber> solns = m.getSolutions();
                     for (int i = 0; i < solns.size(); i++) {
-                        System.out.print(solns.get(i));
+                        System.out.print(solns.get(i).toString());
                         fw.write(solns.get(i).toString());
                         if (i < solns.size()-1) {
                             System.out.print(", ");

@@ -26,63 +26,64 @@ public class Matrix {
     }
 
     /**
-    * Add the linear equation specified to the matrix.
-    *
-    * @param l - LinearEquation to add to Matrix
-    */
+     * Add the linear equation specified to the matrix.
+     *
+     * @param l - LinearEquation to add to Matrix
+     */
     public void addEquation(LinearEquation l) {
         eqns.add(l);
     }
 
     /**
-    * Get current state of matrix.
-    *
-    * @return State of matrix (in terms of being processed)
-    */
+     * Get current state of matrix.
+     *
+     * @return State of matrix (in terms of being processed)
+     */
     public SolvedState getSolutionState() {
         return state;
     }
 
     /**
-    * Return the solutions of the solved matrix.
-    *
-    * @return Solutions of the matrix
-    */
-    public List<Double> getSolutions() {
+     * Return the solutions of the solved matrix.
+     *
+     * @return Solutions of the matrix
+     */
+    public List<ComplexNumber> getSolutions() {
         if (state != SolvedState.ONE_SOLUTION) return state == SolvedState.INFINITE_SOLUTIONS ? null : List.of();
-        return eqns.subList(0, numSolutions).stream().map(LinearEquation::getSolution).collect(Collectors.toUnmodifiableList());
+        return eqns.subList(0, numSolutions).stream().map(LinearEquation::getSolution)
+                .collect(Collectors.toUnmodifiableList());
     }
 
     /**
-    * Find row or column that can be swapped with current (row, col) coordinate to allow
-    * solving algorithm to continue.
-    *
-    * @param start - starting (row, col) pair in matrix that is currently 0
-    * @param max - Maximum (currently of rows) for algorithm to search through
-    * @param isRow - Note to algorithm on whether to search the row or the column
-    * @return Index of row/column (non-zero) that can be swapped with specified row/column (zero)
-    */
+     * Find row or column that can be swapped with current (row, col) coordinate to allow
+     * solving algorithm to continue.
+     *
+     * @param start - starting (row, col) pair in matrix that is currently 0
+     * @param max - Maximum (currently of rows) for algorithm to search through
+     * @param isRow - Note to algorithm on whether to search the row or the column
+     * @return Index of row/column (non-zero) that can be swapped with specified row/column (zero)
+     */
     private int foundSwappable(int start, int max, boolean isRow) {
         int tmp = start;
-        while (tmp < max && eqns.get(isRow ? tmp : start).getCoefficient(isRow ? start : tmp) == 0.0) {
+        while (tmp < max && eqns.get(isRow ? tmp : start).getCoefficient(isRow ? start : tmp).isZero()) {
             tmp++;
         }
         return tmp < max ? tmp : -1;
     }
 
     /**
-    * Search the lower left triangular portion of the matrix, starting from specified (row, col)
-    * and see if there exists a coordinate that it can be swapped with (the nearest non-zero (row, col)).
-    *
-    * @param start - starting (row, col) pair in matrix that is currently 0 (matrix iterated through main diagonal)
-    * @param max - Maximum (currently of rows) for algorithm to search through
-    * @return The non-zero (row, col) pair that can be swapped with specified starting point
-    */
+     * Search the lower left triangular portion of the matrix, starting from specified (row, col)
+     * and see if there exists a coordinate that it can be swapped with (the nearest non-zero (row, col)).
+     *
+     * @param start - starting (row, col) pair in matrix that is currently 0 (matrix iterated through main diagonal)
+     * @param max - Maximum (currently of rows) for algorithm to search through
+     * @return The non-zero (row, col) pair that can be swapped with specified starting point
+     */
     private List<Integer> foundSwappableLowerLeft(int start, int max) {
         List<Integer> l = new ArrayList<>();
-        for (int i = start+1; i < max; i++) {
-            for (int j = start; j <= i; j++) {
-                if (eqns.get(i).getCoefficient(j) != 0) {
+        for (int i = start+1; i < max && l.size() == 0; i++) {
+            for (int j = start; j <= i && l.size() == 0; j++) {
+                if (!eqns.get(i).getCoefficient(j).isZero()) {
                     l.add(i);
                     l.add(j);
                 }
@@ -95,14 +96,13 @@ public class Matrix {
     public void solve() {
         boolean canContinue = true;
         int N = eqns.size(), M = N > 0 ? eqns.get(0).getNumOfVariables() : 0, sigEqns = 0;
-        double temp_factor;
+        ComplexNumber temp_factor;
         List<Integer> columnSwaps = new ArrayList<>();
 
         System.out.println("Row manipulation:");
         // Go down matrix to make matrix row-reduced echelon
         for (int i = 0; i < N; i++) {
-            sigEqns++;
-
+            sigEqns = i;
             // There is no i'th variable in the i'th equation, exit algorithm
             if (eqns.get(i).getCoefficient(i) == null) {
                 canContinue = false;
@@ -111,7 +111,7 @@ public class Matrix {
 
             // If current (row, col) of matrix is 0, try to find position to
             // swap, if you can't find one then exit
-            if (eqns.get(i).getCoefficient(i) == 0.0) {
+            if (eqns.get(i).getCoefficient(i).isZero()) {
                 // First, search down along column for non-zero value
                 // and if found, swap rows
                 int found = foundSwappable(i, N, true);
@@ -154,12 +154,14 @@ public class Matrix {
             }
 
             // If coefficient along main diagonal is not 1 then factor row by coefficient before continuing
-            if (eqns.get(i).getCoefficient(i) != 1) {
+            if (eqns.get(i).getCoefficient(i).getReal() != 1.0 || eqns.get(i).getCoefficient(i).getImaginary() != 0.0) {
                 rfc.setModifiedIndex(i);
                 rfc.setModifiedEqn(eqns.get(i));
                 rfc.execute();
-                if ((temp_factor = rfc.getFactor()) != 0)
-                    System.out.println((1/temp_factor) + " * R" + (i+1) + " -> R" + (i+1));
+                if (!(temp_factor = rfc.getFactor()).isZero()) {
+                    System.out.println("R" + (i+1) + " / " + temp_factor.toString() + " -> R" + (i+1));
+                    System.out.println(eqns.get(i));
+                }
             }
 
             // From current row, go down remaining rows and reduce coefficients below to 0 (or skip,
@@ -167,11 +169,12 @@ public class Matrix {
             rrc.setModifierEqn(eqns.get(i));
             rrc.setPosition(i);
             for (int j = i+1; j < N; j++) {
-                if (eqns.get(j).getCoefficient(i) == 0) continue;
+                if (eqns.get(j).getCoefficient(i).isZero()) continue;
                 rrc.setModifiedEqn(eqns.get(j));
                 rrc.execute();
-                if ((temp_factor = rrc.getFactor()) != 0) {
-                    System.out.println(-temp_factor + " * R" + (i+1) + " + R" + (j+1) + " -> R" + (j+1));
+                if (!(temp_factor = rrc.getFactor()).isZero()) {
+                    temp_factor.multiply(new ComplexNumber(-1.0, 0.0));
+                    System.out.println(temp_factor.toString() + " * R" + (i+1) + " + R" + (j+1) + " -> R" + (j+1));
                 }
             }
         }
@@ -198,8 +201,11 @@ public class Matrix {
                     rrc.setPosition(i);
                     rrc.setModifiedEqn(eqns.get(j));
                     rrc.execute();
-                    double t = rrc.getFactor();
-                    if (t != 0) System.out.println(-t + " * R" + (i+1) + " + R" + (j+1) + " -> R" + (j+1));
+                    ComplexNumber t = rrc.getFactor();
+                    t.multiply(new ComplexNumber(-1.0, 0.0));
+                    if (!t.isZero()) {
+                        System.out.println(t.toString() + " * R" + (i+1) + " + R" + (j+1) + " -> R" + (j+1));
+                    }
                 }
             }
 
@@ -214,5 +220,14 @@ public class Matrix {
             state = SolvedState.ONE_SOLUTION;
             numSolutions = M;
         }
+    }
+
+    /** String representation of Matrix */
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (LinearEquation a : eqns) {
+            sb.append(a.toString()).append("\n");
+        }
+        return sb.toString();
     }
 }

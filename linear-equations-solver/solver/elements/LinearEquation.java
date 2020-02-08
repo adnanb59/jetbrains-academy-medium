@@ -3,122 +3,118 @@ package solver.elements;
 import java.util.*;
 
 public class LinearEquation {
-    private List<Double> coefficients;
-    private Double solution;
-    private Double sum;
     private int size;
+    private ComplexNumber sum;
+    private List<ComplexNumber> coefficients;
+    private ComplexNumber solution;
 
     /**
-    * LinearEquation constructor
-    *
-    * @param size - specified size of linear equation
-    */
-    public LinearEquation(int size) {
-        coefficients = new ArrayList<>();
+     * LinearEquation constructor
+     *
+     * @param size - specified size of linear equation
+     * @param equation - array of coefficients
+     */
+    public LinearEquation(int size, List<ComplexNumber> equation) {
         this.size = size;
-        sum = 0.0;
+        coefficients = new ArrayList<>(equation.subList(0, size));
+        solution = equation.remove(size);
+        sum = new ComplexNumber(coefficients.get(0));
+        for (int i = 1; i < size; i++) sum.add(coefficients.get(i));
     }
 
     /**
-    * Add variable to the linear equation.
-    *
-    * @param value - Value of coefficient being inserted
-    */
-    public void addCoefficient(double value) {
-        if (coefficients.size() < size) {
-            coefficients.add(value);
-            sum += value;
-        }
-    }
-
-    /**
-    * Set the value of the specified coefficient in the linear equation.
-    *
-    * @param idx - Coefficient to update
-    * @param v - New value of coefficient
-    */
-    public void setCoefficient(int idx, double v) {
+     * Set the value of the specified coefficient in the linear equation.
+     *
+     * @param idx - Coefficient to update
+     * @param v - New value of coefficient
+     */
+    public void setCoefficient(int idx, ComplexNumber v) {
         if (idx < size) {
-            double temp = coefficients.get(idx);
+            ComplexNumber temp = new ComplexNumber(coefficients.get(idx));
             coefficients.set(idx, v);
-            sum += (v - temp);
+            sum.add(ComplexNumber.subtract(v, temp));
         }
     }
 
     /**
-    * Get value of i'th coefficient.
-    *
-    * @param position - position to get coefficient from
-    * @return position'th coefficient or null (if it doesn't exist)
-    */
-    public Double getCoefficient(int position) {
-        if (position >= size) return null;
-        return this.coefficients.get(position);
+     * Get value of i'th coefficient.
+     *
+     * @param position - position to get coefficient from
+     * @return position'th coefficient or null (if it doesn't exist)
+     */
+    public ComplexNumber getCoefficient(int position) {
+        return position < coefficients.size() ? coefficients.get(position) : null;
     }
 
     /**
-    * Get the number of the variables in the equation.
-    *
-    * @return Get number of variables in the equation
-    */
+     * Get the number of the variables in the equation.
+     *
+     * @return Get number of variables in the equation
+     */
     public int getNumOfVariables() { return size; }
 
     /**
-    * Add the solution to the equation (or override current)
-    *
-    * @param value - New solution for equation
-    */
-    public void addSolution(double value) { solution = value; }
+     * Get the solution for the linear equation.
+     *
+     * @return Solution for equation (or null if none specified)
+     */
+    public ComplexNumber getSolution() { return solution; }
 
     /**
-    * Get the solution for the linear equation.
-    *
-    * @return Solution for equation (or null if none specified)
-    */
-    public Double getSolution() { return isEquationPossible() ? solution : null; }
-
-    /**
-    * Figure out if this equation is not contradictory, in that
-    * the sum of the coefficients is not zero or the solution is zero.
-    *
-    * @return Whether or not the current equation is contradictory or makes sense
-    */
-    public boolean isEquationPossible() {
-        System.out.println(this.solution + " " + this.sum + "\n " + toString());
-        return this.solution == 0.0 || this.sum != 0.0;
-    }
+     * Figure out if this equation is not contradictory, in that
+     * the sum of the coefficients is not zero or the solution is zero.
+     *
+     * @return Whether or not the current equation is contradictory or makes sense
+     */
+    public boolean isEquationPossible() { return solution.isZero() || !sum.isZero(); }
 
     /** Reduce row by the inverse of the coefficient specified in parameter.
-    *
-    * @param idx - specific coefficient to reduce equation by
-    * @return factor that reduces coefficients & solution of equation
-    */
-    public double factorEquation(int idx) {
-        Double factor = coefficients.get(idx);
-        for (int i = 0; i < size; i++) coefficients.set(i, coefficients.get(i)/factor);
-        solution /= factor;
-        sum /= factor;
+     *
+     * @param idx - specific coefficient to reduce equation by
+     * @return factor that reduces coefficients & solution of equation
+     */
+    public ComplexNumber factorEquation(int idx) {
+        ComplexNumber factor = new ComplexNumber(coefficients.get(idx));
+        for (int i = idx; i < size; i++) {
+            coefficients.get(i).divide(factor);
+        }
+        solution.divide(factor);
+        sum.divide(factor);
         return factor;
     }
 
     /** Reduce row by factor of the specified linear equation's coefficient (specified by position).
-    *
-    * @param position - Specific coefficient to get
-    * @param b - Equation to get coefficient from
-    * @return factor reducing equation (coefficients & solution)
-    */
-    public double modifyEquation(int position, LinearEquation b) {
-        double factor = position < size ? coefficients.get(position) : 0;
-        if (factor != 0) {
-            factor = coefficients.get(position);
-            factor /= b.getCoefficient(position);
-            solution -= factor*b.getSolution();
+     *
+     * @param position - Specific coefficient to get
+     * @param b - Equation to get coefficient from
+     * @return factor reducing equation (coefficients & solution)
+     */
+    public ComplexNumber modifyEquation(int position, LinearEquation b) {
+        ComplexNumber factor = position < size ? new ComplexNumber(coefficients.get(position)) : new ComplexNumber(0.0, 0.0);
+        if (!factor.isZero()) {
+            factor.divide(b.getCoefficient(position));
+            solution.subtract(ComplexNumber.multiply(factor, b.getSolution()));
             for (int i = position; i < size; i++) {
-                coefficients.set(i, coefficients.get(i) - factor*b.getCoefficient(i));
-                sum -= factor*b.getCoefficient(i);
+                coefficients.get(i).subtract(ComplexNumber.multiply(factor, b.getCoefficient(i)));
+                sum.subtract(ComplexNumber.multiply(factor, b.getCoefficient(i)));
             }
         }
-
         return factor;
+    }
+
+    /** String representation of LinearEquation */
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < coefficients.size(); i++) {
+            if (i != 0) {
+                if (coefficients.get(i).getReal() > 0 ||
+                        (coefficients.get(i).getReal()== 0 && coefficients.get(i).getImaginary() > 0)) {
+                    sb.append("+ ");
+                }
+            }
+            sb.append(coefficients.get(i).toString()).append(" ");
+        }
+        sb.append("= ").append(solution.toString());
+        return sb.toString();
     }
 }
