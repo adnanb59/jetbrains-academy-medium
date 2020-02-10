@@ -5,6 +5,7 @@ Coefficients for the variables in the system are complex numbers, so solutions c
 You're essentially creating a matrix and a result and getting the solution vector (Ax = B).
 
 The solution algorithm utilizes complete pivoting (so columns can be switched along with rows).
+The architecture utilizes a Command pattern for individual actions involving row & column swaps and value updates.
 If there are solutions, then they will be displayed, otherwise `No solutions` or `Infinitely many solutions`
 will be given.
 
