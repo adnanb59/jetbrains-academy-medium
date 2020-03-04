@@ -1,38 +1,57 @@
 package recognition;
 
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 public class Network {
-    private static int[] weights = {2, 1, 2, 4, -4, 4, 2, -1, 2, -5};
-    private static int b = -5;
+    private static int[][] matrix;
     private Integer solution = null;
     private int[] values;
-    private int index;
+    private Set<Integer> output;
 
     public Network() {
-        values = new int[9];
-        index = 0;
+        matrix = new int[][]{
+                { 1,  1,  1,  1, -1,  1,  1, -1,  1,  1, -1,  1,  1,  1,  1},
+                {-1,  1, -1, -1,  1, -1, -1,  1, -1, -1,  1, -1, -1,  1, -1},
+                { 1,  1,  1, -1, -1,  1,  1,  1,  1,  1, -1, -1,  1,  1,  1},
+                { 1,  1,  1, -1, -1,  1,  1,  1,  1, -1, -1,  1,  1,  1,  1},
+                { 1, -1,  1,  1, -1,  1,  1,  1,  1, -1, -1,  1, -1, -1,  1},
+                { 1,  1,  1,  1, -1, -1,  1,  1,  1, -1, -1,  1,  1,  1,  1},
+                { 1,  1,  1,  1, -1, -1,  1,  1,  1,  1, -1,  1,  1,  1,  1},
+                { 1,  1,  1, -1, -1,  1, -1, -1,  1, -1, -1,  1, -1, -1,  1},
+                { 1,  1,  1,  1, -1,  1,  1,  1,  1,  1, -1,  1,  1,  1,  1},
+                { 1,  1,  1,  1, -1,  1,  1,  1,  1, -1, -1,  1,  1,  1,  1}
+        };
+        values = new int[]{-1, 6, 1, 0, 2, 0, -1, 3, -2, -1};
+        output = new LinkedHashSet<>();
     }
 
-    public void addNodeValue(int value) {
-        if (index < 9) {
-            values[index] = value;
-            ++index;
-        }
+    public void addNodeValue(int pos) {
+        output.add(pos);
+    }
+
+    public boolean removeNode(int pos) {
+        return output.remove(pos);
     }
 
     public Integer getResult() {
-        if (index < 9) return null;
         if (solution == null) {
-            solution = b;
-            //System.out.println(solution);
-            for (int v : values) {
-                //System.out.print("-->" + v + " " + weights[9-index]);
-                solution += v * weights[9 - index--];
-                //System.out.println(solution);
+            // Values already have the biases added to them, now add node weights
+            for (Integer o : output) {
+                for (int j = 0; j < values.length; j++) {
+                    values[j] += matrix[j][o];
+                }
             }
-            //System.out.println(solution);
-            solution = solution >= 0 ? 0 : 1;
+            int curr = 0, max = values[0];
+            for (int i = 1; i < values.length; i++) {
+                if (values[i] > max) {
+                    curr = i;
+                    max = values[i];
+                }
+            }
+            solution = curr;
         }
         return solution;
     }
