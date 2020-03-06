@@ -1,58 +1,49 @@
 package recognition;
 
+import java.io.*;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.Random;
 
-public class Network {
-    private static int[][] matrix;
-    private Integer solution = null;
-    private int[] values;
-    private Set<Integer> output;
+public class Network implements Serializable {
+    private static final long serialVersionUID = 7L;
+    private static int[][] idealActivations;
+    private double[][] weights;
+    private int[] biases;
+    private double[] outputs;
+    private double LEARNING_COEFFICIENT = 0.5;
 
     public Network() {
-        matrix = new int[][]{
-                { 1,  1,  1,  1, -1,  1,  1, -1,  1,  1, -1,  1,  1,  1,  1},
-                {-1,  1, -1, -1,  1, -1, -1,  1, -1, -1,  1, -1, -1,  1, -1},
-                { 1,  1,  1, -1, -1,  1,  1,  1,  1,  1, -1, -1,  1,  1,  1},
-                { 1,  1,  1, -1, -1,  1,  1,  1,  1, -1, -1,  1,  1,  1,  1},
-                { 1, -1,  1,  1, -1,  1,  1,  1,  1, -1, -1,  1, -1, -1,  1},
-                { 1,  1,  1,  1, -1, -1,  1,  1,  1, -1, -1,  1,  1,  1,  1},
-                { 1,  1,  1,  1, -1, -1,  1,  1,  1,  1, -1,  1,  1,  1,  1},
-                { 1,  1,  1, -1, -1,  1, -1, -1,  1, -1, -1,  1, -1, -1,  1},
-                { 1,  1,  1,  1, -1,  1,  1,  1,  1,  1, -1,  1,  1,  1,  1},
-                { 1,  1,  1,  1, -1,  1,  1,  1,  1, -1, -1,  1,  1,  1,  1}
+        // Math.random() to create number between 0 and 1
+        idealActivations = new int[][]{
+                { 1,  1,  1,  1,  0,  1,  1,  0,  1,  1,  0,  1,  1,  1,  1},
+                { 0,  1,  0,  0,  1,  0,  0,  1,  0,  0,  1,  0,  0,  1,  0},
+                { 1,  1,  1,  0,  0,  1,  1,  1,  1,  1,  0,  0,  1,  1,  1},
+                { 1,  1,  1,  0,  0,  1,  1,  1,  1,  0,  0,  1,  1,  1,  1},
+                { 1,  0,  1,  1,  0,  1,  1,  1,  1,  0,  0,  1,  0,  0,  1},
+                { 1,  1,  1,  1,  0,  0,  1,  1,  1,  0,  0,  1,  1,  1,  1},
+                { 1,  1,  1,  1,  0,  0,  1,  1,  1,  1,  0,  1,  1,  1,  1},
+                { 1,  1,  1,  0,  0,  1,  0,  0,  1,  0,  0,  1,  0,  0,  1},
+                { 1,  1,  1,  1,  0,  1,  1,  1,  1,  1,  0,  1,  1,  1,  1},
+                { 1,  1,  1,  1,  0,  1,  1,  1,  1,  0,  0,  1,  1,  1,  1}
         };
-        values = new int[]{-1, 6, 1, 0, 2, 0, -1, 3, -2, -1};
-        output = new LinkedHashSet<>();
-    }
-
-    public void addNodeValue(int pos) {
-        output.add(pos);
-    }
-
-    public boolean removeNode(int pos) {
-        return output.remove(pos);
-    }
-
-    public Integer getResult() {
-        if (solution == null) {
-            // Values already have the biases added to them, now add node weights
-            for (Integer o : output) {
-                for (int j = 0; j < values.length; j++) {
-                    values[j] += matrix[j][o];
-                }
-            }
-            int curr = 0, max = values[0];
-            for (int i = 1; i < values.length; i++) {
-                if (values[i] > max) {
-                    curr = i;
-                    max = values[i];
-                }
-            }
-            solution = curr;
+        biases = new int[]{-1, 6, 1, 0, 2, 0, -1, 3, -2, -1};
+        weights = new double[10][15];
+        outputs = new double[10];
+        Random r = new Random();
+        for (int i = 0; i < weights.length; i++) {
+            Arrays.fill(weights[i], r.nextGaussian());
         }
-        return solution;
     }
+
+    public double sigmoid(double value) {
+        return 1/(1 + Math.exp(-value));
+    }
+
+    /*private void writeObject(ObjectOutputStream oos) throws Exception {
+        // write the custom serialization code here
+    }
+
+    private void readObject(ObjectInputStream ois) throws Exception {
+        // write the custom deserialization code here
+    }*/
 }
