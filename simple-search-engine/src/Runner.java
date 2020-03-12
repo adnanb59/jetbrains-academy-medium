@@ -1,29 +1,16 @@
-//package search;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+import search.*;
 
 public class Runner {
-    static List<String> people;
-    static Map<String, Set<Integer>> invertedIndexStructure;
 
-    public static Set<Integer> findPerson(String person) {
-        //System.out.println("Enter a name or email to search all suitable people.");
-        //List<String> peopleOfInterest = new ArrayList<String>();
-        Set<Integer> peopleOfInterest = new HashSet<>();
-
-        for (String portion : person.split("\\s+")) {
-            for (String k : invertedIndexStructure.keySet()) {
-                // retainAll here(cond'n)
-                if (k.toLowerCase().equals(portion.toLowerCase())) peopleOfInterest.addAll(invertedIndexStructure.get(k));
-            }
-        }
-        return peopleOfInterest;
-    }
-
-    public static void run(Scanner in) {
+    /***
+    * Run the menu for user to interact with the search engine
+    *
+    * @param in - Scanner for user input
+    * @param e - Search engine
+    */
+    public static void run(Scanner in, Engine e) {
         boolean runPrompt = true;
         while (runPrompt) {
             System.out.println("=== Menu ===");
@@ -41,16 +28,16 @@ public class Runner {
                                         selection.equals("NONE") ? 3 : 0);
                     }
                     System.out.println("Enter a name or email to search all suitable people.");
-                    //String person = in.nextLine().toLowerCase();
-                    //findPerson(in);
-                    Set<Integer> res;
-                    if (option == 1) res = findPersonAll(in.nextLine().toLowerCase());
-                    else if (option == 2) res = findPersonAny(in.nextLine().toLowerCase());
-                    else res = findPersonNone(in.nextLine().toLowerCase());
+                    List<String> res;
+                    // Independent of option, pass next user input as search query
+                    if (option == 1) res = e.findPersonAll(in.nextLine().toLowerCase());
+                    else if (option == 2) res = e.findPersonAny(in.nextLine().toLowerCase());
+                    else res = e.findPersonNone(in.nextLine().toLowerCase());
+
                     if (res.size() != 0) {
                         System.out.println("Found people:");
-                        for (Integer matchingPerson : res) {
-                            System.out.println(people.get(matchingPerson));
+                        for (String matchingPerson : res) {
+                            System.out.println(matchingPerson);
                         }
                     } else {
                         System.out.println("No matching people found.");
@@ -58,7 +45,7 @@ public class Runner {
                     break;
                 case 2:
                     System.out.println("=== List of people ===");
-                    for (String person : people) {
+                    for (String person : e.getPeople()) {
                         System.out.println(person);
                     }
                     break;
@@ -70,56 +57,16 @@ public class Runner {
                     break;
             }
         }
-        //in.nextLine();
         System.out.println("Bye!");
     }
 
-    private static Set<Integer> findPersonAny(String person) {
-        // addAll
-        return findPerson(person);
-    }
-
-    private static Set<Integer> findPersonNone(String person) {
-        Set<Integer> result = IntStream.range(0, people.size()).boxed().collect(Collectors.toSet());
-        result.removeAll(findPerson(person));
-        return result;
-    }
-
-    private static Set<Integer> findPersonAll(String person) {
-        Set<Integer> peopleOfInterest = new HashSet<>();
-
-        for (String portion : person.split("\\s+")) {
-            for (String k : invertedIndexStructure.keySet()) {
-                // retainAll here(cond'n)
-                if (k.toLowerCase().equals(portion.toLowerCase())) {
-                    if (peopleOfInterest.isEmpty()) peopleOfInterest.addAll(invertedIndexStructure.get(k));
-                    else peopleOfInterest.retainAll(invertedIndexStructure.get(k));
-                }
-            }
-        }
-        return peopleOfInterest;
-    }
-
-    public static boolean validatePerson(String potential) {
-        String[] entry = potential.trim().split("\\s+");
-
-        if (!entry[0].matches("[a-zA-Z]+") || !entry[1].matches("[a-zA-Z]+")) return false;
-
-        return (entry.length != 3) || entry[2].matches("[a-zA-Z0-9_\\-.]+@[a-z]+\\.(com|ca)");
-    }
-
-    public static void addPersonToStructures(String person) {
-        people.add(person);
-        for (String p : person.split("\\s+")) {
-            if (!invertedIndexStructure.containsKey(p)) {
-                invertedIndexStructure.put(p, new LinkedHashSet<>(Arrays.asList(people.size()-1)));
-            } else {
-                invertedIndexStructure.get(p).add(people.size()-1);
-            }
-        }
-    }
-
+    /***
+    * Main method (prompt user for people to store in database or read them from file).
+    *
+    * @param args - if they exist (--data [filename])
+    */
     public static void main(String[] args) {
+        // Check arguments to see if --data flag and filename are given
         boolean isDataPassed = false;
         String dataFile = null;
         for (String arg : args) {
@@ -129,22 +76,22 @@ public class Runner {
                 isDataPassed = true;
             }
         }
-        people = new ArrayList<>();
-        invertedIndexStructure = new LinkedHashMap<>();
 
+        Engine e = new Engine(new Data());
+        // If file was passed in, go through it and add people to collection
+        // Otherwise, prompt user to add people to the collection
+        // Afterwards, run the main program
         if (dataFile != null) {
             File f = new File(dataFile);
             try (Scanner in = new Scanner(f)) {
                 while (in.hasNextLine()) {
                     String person = in.nextLine();
-                    if (validatePerson(person)) {
-                        addPersonToStructures(person);
-                    }
+                    e.addPerson(person);
                 }
                 in.close();
-                run(new Scanner(System.in));
-            } catch (IOException e) {
-                e.printStackTrace();
+                run(new Scanner(System.in), e);
+            } catch (IOException err) {
+                err.printStackTrace();
             }
         } else {
             System.out.println("Enter the number of people:");
@@ -153,16 +100,15 @@ public class Runner {
                 System.out.println("Enter all people:");
                 for (int i = 0; i < numPeople;) {
                     String person = in.nextLine();
-                    if (validatePerson(person)) {
-                        addPersonToStructures(person);
+                    if (e.addPerson(person)) {
                         i++;
                     } else {
                         System.out.println("Incorrect format for user, try again!");
                     }
                 }
-                run(in);
-            } catch (NumberFormatException e) {
-                e.printStackTrace();
+                run(in, e);
+            } catch (NumberFormatException err) {
+                err.printStackTrace();
             }
         }
 
