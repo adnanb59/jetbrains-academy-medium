@@ -1,8 +1,7 @@
-import recognition.*;
+package recognition;
+import java.util.*;
 
-import java.util.Scanner;
-
-public class Runner {
+public class Main {
     public static String readGrid(Scanner in) {
         int lines = 0, ROWS = 5, COLS = 3;
         StringBuilder grid = new StringBuilder();
