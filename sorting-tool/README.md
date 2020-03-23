@@ -1,3 +1,3 @@
 ## sorting-tool
 
-https://hyperskill.org/projects/45?goal=7
+##### URL: https://hyperskill.org/projects/45
