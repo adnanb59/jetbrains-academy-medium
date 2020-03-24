@@ -1,3 +1,3 @@
 ## readability-score
 
-https://hyperskill.org/projects/39?goal=7
+##### URL: https://hyperskill.org/projects/39
