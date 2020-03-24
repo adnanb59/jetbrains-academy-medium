@@ -3,68 +3,72 @@ import java.util.Scanner;
 import java.util.regex.*;
 
 public class Runner {
-    /**
-     *
-     * @param characters
-     * @param words
-     * @param sentences
-     * @return
-     */
+    /** Get the automated readability index (ARI) score for a given text
+    * (denoted by the # of characters, words & sentences)
+    *
+    * @param characters - "" in text
+    * @param words - "" in text
+    * @param sentences - "" in text
+    * @return ARI score
+    */
     public static double getARI(int characters, int words, int sentences) {
         return (4.71*characters/words) + (0.5*words/sentences) - 21.43;
     }
 
-    /**
-     *
-     * @param words
-     * @param sentences
-     * @param syllables
-     * @return
-     */
+    /** Get the Flesch-Kincaid Readability (FKR) score for a given text
+    * (denoted by the # of words, sentences & syllables)
+    *
+    * @param words - "" in text
+    * @param sentences - "" in text
+    * @param syllables - "" in text
+    * @return FKR score
+    */
     public static double getFKR(int words, int sentences, int syllables) {
         return (0.39*words/sentences) + (11.8*syllables/words) - 15.59;
     }
 
-    /**
-     *
-     * @param polysyllables
-     * @param sentences
-     * @return
-     */
+    /** Get the Simple Measure of Gobbledygook (SMOG) score for a given text
+    * (denoted by the # of polysyllables & sentences)
+    *
+    * @param polysyllables - "" in text
+    * @param sentences - "" in text
+    * @return SMOG score
+    */
     public static double getSMOG(int polysyllables, int sentences) {
         return 1.043*Math.sqrt(polysyllables*30.0/sentences) + 3.1291;
     }
 
-    /**
-     *
-     * @param L
-     * @param S
-     * @return
-     */
+    /** Get the Coleman-Liau Index (CLI) score for a given text
+    * (denoted by the # of characters and sentences per 100 words)
+    *
+    * @param L - characters per 100 words
+    * @param S - sentences per 100 words
+    * @return CLI score
+    */
     public static double getCLI(double L, double S) { // characters*100/words, sentences*100/words
         return 0.0588*L - 0.296*S - 15.8;
     }
 
-    /**
-     *
-     * @param measure
-     * @return
-     */
+    /** Figure out age that maps to given readability score of text
+    *
+    * @param measure - readability score (regardless of measure used)
+    * @return Corresponding age of measure passed in
+    */
     public static int mapMeasureToAge(double measure) {
         int rounded_measure = (int) Math.round(measure);
         int res = rounded_measure + 4 + (rounded_measure <= 3 ? 0 : 1);
         return res <= 18 ? res : 24;
     }
 
-    /**
-     *
-     * @param characters
-     * @param words
-     * @param sentences
-     * @param syllables
-     * @param polysyllables
-     * @return
-     */
+    /** Return formatted string displaying all the attributes of a given text
+    *
+    * @param characters - "" in text
+    * @param words - "" in text
+    * @param sentences - "" in text
+    * @param syllables - "" in text
+    * @param polysyllables - "" in text
+    * @return Formatted display string
+    */
     public static String getResult(int characters, int words, int sentences, int syllables, int polysyllables) {
         return "\nWords: " + words + "\n" +
                 "Sentences: " + sentences + "\n" +
@@ -73,16 +77,17 @@ public class Runner {
                 "Polysyllables: " + polysyllables + "\n";
     }
 
-    /**
-     *
-     * @param choice
-     * @param characters
-     * @param words
-     * @param sentences
-     * @param syllables
-     * @param polysyllables
-     * @return
-     */
+    /** Get a formatted string representing the readability scores (the ones to display are specified by user)
+    * of a given text (specified by it's characteristics)
+    *
+    * @param choice - # corresponding to which index score to display (or all, if specified)
+    * @param characters - "" in text
+    * @param words - "" in text
+    * @param sentences - "" in text
+    * @param syllables - "" in text
+    * @param polysyllables - "" in text
+    * @return Formatted string representing the desired scores from the text
+    */
     public static String getMeasures(int choice, int characters, int words, int sentences, int syllables, int polysyllables) {
         double avg_age = 0;
         int age;
@@ -123,24 +128,23 @@ public class Runner {
 
     public static void main(String[] args) {
         File f = new File(args[0]);
-        //
         try (Scanner in = new Scanner(f); Scanner input = new Scanner(System.in)) {
             Pattern p = Pattern.compile("[aeiouy]{1,2}");
             Matcher m;
             int characters = 0, words = 0, sentences_count = 0, syllables = 0, polysyllables = 0;
 
-            //
+            // Print out text from user and process it as you go
             System.out.println("The text is:");
             while (in.hasNextLine()) {
                 String line = in.nextLine().trim();
                 System.out.println(line);
-                //
+                // Take a line and grab all the sentences into an array, then go through them
                 String[] sentences = line.split("\\s*([.?!])\\s*");
                 sentences_count += sentences.length;
                 for (String sentence : sentences) {
                     String[] words_in_sentence = sentence.split("\\s+");
                     for (String word : words_in_sentence) {
-                        //
+                        // Per each word in the sentence, calculate the amount of vowels and update stats
                         int vowels = 0;
                         m = p.matcher(word);
                         while (m.find()) {
@@ -161,12 +165,12 @@ public class Runner {
                 if (!in.hasNextLine() && line.charAt(line.length()-1) != '.') characters -= 1;
             }
 
-            //
+            // If the text is non-empty then print out the stats of the text and prompt user for score display
             if (characters > 0) {
                 polysyllables += 1;
                 System.out.println(getResult(characters, words, sentences_count, syllables, polysyllables));
 
-                //
+                // Prompt user to select a choice for score to calculate (or all, if chosen)
                 int check_choice = 0;
                 while (check_choice == 0) {
                     System.out.print("Enter the score you want to calculate (ARI, FK, SMOG, CL, all): ");
@@ -178,7 +182,8 @@ public class Runner {
                     System.out.println();
                 }
 
-                System.out.println(getMeasures(check_choice, characters, words, sentences_count, syllables, polysyllables));
+                System.out.println(getMeasures(check_choice, characters, words,
+                                               sentences_count, syllables, polysyllables));
             }
         } catch (FileNotFoundException e) {
             e.getStackTrace();
