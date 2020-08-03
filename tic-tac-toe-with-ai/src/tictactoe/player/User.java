@@ -17,7 +17,7 @@ public class User extends Player {
         while (!areCoordinatesValid) {
             /* BOARD COORDINATES:
              * (1,3) (2,3) (3,3)
-             * (1,2) (2,2) (2,3)
+             * (1,2) (2,2) (3,2)
              * (1,1) (2,1) (3,1) */
             System.out.print("Enter the coordinates: ");
             // If coordinates are valid (& unoccupied), then the move will be made
@@ -34,7 +34,6 @@ public class User extends Player {
                 System.out.println("You should enter numbers!");
             } finally {
                 in.nextLine();
-                System.out.println();
             }
         }
     }

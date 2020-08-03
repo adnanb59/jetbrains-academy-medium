@@ -8,6 +8,6 @@ public abstract class Player {
     public void setBoard(Board board) {
         this.board = board;
     }
-
+    public void removeBoard() { this.board = null; }
     public abstract void move();
 }

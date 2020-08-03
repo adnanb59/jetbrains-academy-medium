@@ -5,14 +5,20 @@ import java.util.Scanner;
 
 public class Runner {
     public static void play(Board board, Player p1, Player p2) {
+        p1.setBoard(board);
+        p2.setBoard(board);
+
         while (!board.isCompleted()) {
             System.out.println(board.printBoard());
             if (board.getCurrentPlayer() == Piece.X) p1.move();
             else p2.move();
         }
+        p1.removeBoard();
+        p2.removeBoard();
 
         System.out.println(board.printBoard());
         System.out.println(board.getState());
+        System.out.println();
         board.reset();
     }
 
