@@ -1,14 +1,19 @@
 package tictactoe.board;
 
+import tictactoe.player.*;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class Board {
     private Piece[][] board;
     private State state;
     private int x_moves, o_moves;
+    private ArrayList<Player> listeners;
 
     public Board() {
         board = new Piece[3][3];
+        listeners = new ArrayList<>();
         prepareBoardForUse();
     }
 
@@ -71,16 +76,35 @@ public class Board {
         if (Math.abs(x_moves - o_moves) > 1 || (x_wins > 0 && o_wins > 0)) this.state = State.IMPOSSIBLE;
         else if (x_wins == 0 && o_wins == 0 && (x_moves + o_moves == board.length*board[0].length))
             this.state = State.DRAW;
-        else if (x_wins > 1) this.state = State.X_WINS;
-        else if (o_wins > 1) this.state = State.O_WINS;
+        else if (x_wins >= 1) this.state = State.X_WINS;
+        else if (o_wins >= 1) this.state = State.O_WINS;
         else this.state = this.state == State.NOT_FINISHED_X ? State.NOT_FINISHED_O : State.NOT_FINISHED_X;
     }
 
     public void makeMove(int r, int c) {
-        this.board[3-c][r-1] = this.state == State.NOT_FINISHED_X ? Piece.X : Piece.O;
+        this.board[3-c][r-1] = getCurrentPlayer();
         this.x_moves += this.board[3-c][r-1] == Piece.X ? 1 : 0;
         this.o_moves += this.board[3-c][r-1] == Piece.O ? 1 : 0;
         int wins = processBoardForWins(3-c, r-1);
         updateGameState(this.board[3-c][r-1] == Piece.X ? wins : 0, this.board[3-c][r-1] == Piece.O ? wins : 0);
+        //notifyPlayers(r, c);
+    }
+
+    private void notifyPlayers(int r, int c) {
+        for (Player p : listeners) {
+            //p.signal(r, c);
+        }
+    }
+
+    public Piece getPiece(int r, int c) {
+        return board[3-c][r-1];
+    }
+
+    public void unregister(Player observer) {
+        listeners.remove(observer);
+    }
+
+    public void register(Player observer) {
+        listeners.add(observer);
     }
 }
