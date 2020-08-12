@@ -3,12 +3,7 @@ package tictactoe.player;
 import tictactoe.board.Board;
 import tictactoe.board.Piece;
 
-import java.util.HashSet;
-import java.util.Set;
-
 public class Medium extends Player {
-
-
     @Override
     public void setBoard(Board board) {
         super.setBoard(board);
@@ -21,156 +16,67 @@ public class Medium extends Player {
         super.removeBoard();
     }
 
-    private int checkSectionOfBoard(int r, int c, int delta_r, int delta_c) {
-        int row = 0, col = 0, free_count = 0;
-        if (board.isAvailable(r, c)) {
-            free_count++;
-            row = r;
-            col = c;
-        }
-        if (board.isAvailable(r + delta_r, c + delta_c)) {
-            free_count++;
-            row = r + delta_r;
-            col = c + delta_c;
-        }
-        if (board.isAvailable(r + 2*delta_r, c + 2*delta_c)) {
-            free_count++;
-            row = r + 2*delta_r;
-            col = c + 2*delta_c;
-        }
-        if (free_count == 1) {
-            int tmp_row = row == r ? r + delta_r : r, tmp_col = col == c ? c + delta_c : c;
-            if (board.getPiece(tmp_row, tmp_col) ==
-                board.getPiece(row == r + 2*delta_r ? r + delta_r : r + 2*delta_r, col == c + 2*delta_c ? c + delta_c : c + 2*delta_c)) {
-                int m = board.getPiece(tmp_row, tmp_col) == board.getCurrentPlayer() ? 1 : -1;
-                return m*(delta_r == 0 ? col : row);
-            }
-        }
-        return 0;
-    }
-
     @Override
     public void move() {
         System.out.printf("Making move level \"%s\"\n", "medium");
-        int r = 0, c = 0, free_count = 0;
-        // Check verticals
-        for (int i = 1; i <= 3; i++) {
-            // i, 1, 0, 1
-            int tmp = checkSectionOfBoard(i, 1, 0, 1);
-            if (tmp > 0) {
-                board.makeMove(i, tmp);
-                return;
-            } else if (tmp < 0) {
-                r = i;
-                c = -tmp;
+        int move = -1, defend = -1;
+        for (Integer a : available) {
+            int f, g=0, h=0;
+            if ((f=checkHorizontal(a)) == 1 || (g=checkVertical(a)) == 1 || (a % 2 != 0 && (h=checkDiagonal(a)) == 1)) {
+                move = a;
+                break;
+            } else if (defend == -1 && (f == -1 || g == -1 || (a % 2 != 0 && h == -1))) {
+                defend = a;
             }
-            /*free_count = (board.isAvailable(i, 3) ? 1 : 0) +
-                       (board.isAvailable(i, 2) ? 1 : 0) +
-                       (board.isAvailable(i, 1) ? 1 : 0);
-            if (free_count == 1) {
-                int j = board.isAvailable(i, 3) ? 3 : board.isAvailable(i, 2) ? 2 : 1;
-                if (board.getPiece(i, j-1 <= 0 ? 3+(j-1) : j-1) == board.getPiece(i, j-2 <= 0 ? 3+(j-2) : j-2)) {
-                    if (board.getPiece(i, j-1 <= 0 ? 3+(j-1) : j-1) == board.getCurrentPlayer()) {
-                        board.makeMove(i, j);
-                        System.out.println("(" + i + ", " + j + ")");
-                        return;
-                    } else {
-                        r = i;
-                        c = j;
-                    }
-                }
-            }*/
         }
+        if (move == -1 && defend == -1) {
+            move = available.get((int) (Math.random()*available.size()));
+        } else if (defend != -1) {
+            move = defend;
+        }
+        board.makeMove(((move-1)%3)+1,3 - (move-1)/3);
+    }
 
-        // Check horizontals
-        for (int i = 1; i <= 3; i++) {
-            // 1, i, 1, 0
-            int tmp = checkSectionOfBoard(1, i, 1, 0);
-            if (tmp > 0) {
-                board.makeMove(tmp, i);
-                return;
-            } else if (tmp < 0) {
-                r = -tmp;
-                c = i;
-            }
-            /*free_count = (board.isAvailable(1, i) ? 1 : 0) +
-                    (board.isAvailable(2, i) ? 1 : 0) +
-                    (board.isAvailable(3, i) ? 1 : 0);
-            if (free_count == 1) {
-                int j = board.isAvailable(1, i) ? 1 : board.isAvailable(2, i) ? 2 : 3;
-                if (board.getPiece(j-1 <= 0 ? 3+(j-1) : j-1, i) == board.getPiece(j-2 <= 0 ? 3+(j-2) : j-2, i)) {
-                    if (board.getPiece(j-1 <= 0 ? 3+(j-1) : j-1, i) == board.getCurrentPlayer()) {
-                        board.makeMove(j, i);
-                        System.out.println("(" + j + ", " + i + ")");
-                        return;
-                    } else if (r == 0) {
-                        r = j;
-                        c = i;
-                    }
-                }
-            }*/
-        }
+    private int _checkResult(int first, int second) {
+        if (board.getPiece(((first-1)%3)+1,3 - (first-1)/3) == board.getCurrentPlayer() && board.getPiece(((second-1)%3)+1,3 - (second-1)/3) == board.getCurrentPlayer()) {
+            return 1;
+        } else if (board.getPiece(((first-1)%3)+1,3 - (first-1)/3) != Piece.EMPTY && board.getPiece(((second-1)%3)+1,3 - (second-1)/3) != Piece.EMPTY) {
+            return -1;
+        } else return 0;
+    }
 
-        // Check diagonals
-        // - Check R to L
-        // 1, 1, 1, 1
-        int tmp = checkSectionOfBoard(1, 1, 1, 1);
-        if (tmp > 0) {
-            board.makeMove(tmp, tmp);
-            return;
-        } else if (tmp < 0) {
-            r = -tmp;
-            c = -tmp;
-        }
-        /*free_count = (board.isAvailable(3, 3) ? 1 : 0) + (board.isAvailable(2, 2) ? 1 : 0) +
-                   (board.isAvailable(1, 1) ? 1 : 0);
-        if (free_count == 1) {
-            int elem = board.isAvailable(1, 1) ? 1 : board.isAvailable(2, 2) ? 2 : 3;
-            int tmp = elem - 1 <= 0 ? 3 + (elem - 1) : elem - 1;
-            int tmp_second = elem - 2 <= 0 ? 3 + (elem - 2) : elem - 2;
-            if (board.getPiece(tmp, tmp) == board.getPiece(tmp_second, tmp_second)) {
-                if (board.getPiece(tmp, tmp) == board.getCurrentPlayer()) {
-                    board.makeMove(elem, elem);
-                    System.out.println("(" + elem + ", " + elem + ")");
-                    return;
-                } else if (r == 0) {
-                    r = elem;
-                    c = elem;
-                }
-            }
-        }*/
-        // - Check L to R
-        // 1, 3, 1, -1
-        tmp = checkSectionOfBoard(1, 3, 1, -1);
-        if (tmp > 0) {
-            board.makeMove(tmp, 3-tmp+1);
-            return;
-        } else if (tmp < 0) {
-            r = tmp;
-            c = 3-tmp+1;
-        }
-        /*free_count = (board.isAvailable(1, 3) ? 1 : 0) + (board.isAvailable(2, 2) ? 1 : 0) +
-               (board.isAvailable(3, 1) ? 1 : 0);
-        if (free_count == 1) {
-            int elem = board.isAvailable(1, 3) ? 1 : board.isAvailable(2, 2) ? 2 : 3;
-            int tmp = elem - 1 <= 0 ? 3 + (elem - 1) : elem - 1;
-            int tmp_second = elem - 2 <= 0 ? 3 + (elem - 2) : elem - 2;
-            if (board.getPiece(tmp, 3-tmp+1) == board.getPiece(tmp_second, 3-tmp_second+1)) {
-                if (board.getPiece(tmp, 3-tmp+1) == board.getCurrentPlayer()) {
-                    board.makeMove(elem, 3-elem+1);
-                    System.out.println("(" + elem + ", " + (3-elem+1) + ")");
-                    return;
-                } else {
-                    r = elem;
-                    c = 3-elem+1;
-                }
-            }
-        }*/
+    private int checkDiagonal(int a) {
+        if (a % 2 == 0) return 0;
+        int result = 0;
 
-        if (r == 0) {
-            while (!board.isAvailable(r=((int) (Math.random()*3 + 1)), c=((int) (Math.random()*3 + 1))));
+        if (a % 4 == a % 2) {
+            int first = a + 4, second = a + 8;
+            if (first > 9) first %= 6;
+            if (second > 9) second %= 6;
+            result = _checkResult(first, second);
         }
-        board.makeMove(r, c);
-        System.out.println("(" + r + ", " + c + ")");
+        if (result != 1 && (a == 5 || a % 4 == 3)) {
+            int first = a + 2, second = a + 4;
+            if (first > 9) first %= 6;
+            if (second > 9) second %= 6;
+            int tmp = _checkResult(first, second);
+            result = tmp == 1 ? 1 : (result == 0 ? tmp : result);
+        }
+        return result;
+    }
+
+    private int checkVertical(int a) {
+        int first = a+3, second = a+6;
+        if (first > 9) first %= 9;
+        if (second > 9) second %= 9;
+        return _checkResult(first, second);
+    }
+
+    private int checkHorizontal(int a) {
+        int first = a+1, second = a+2;
+        int factor = (a-1)/3;
+        if (first > 3*(factor+1)) first = (first % 3) + 3*factor;
+        if (second > 3*(factor+1)) second = (second % 3) + 3*factor;
+        return _checkResult(first, second);
     }
 }

@@ -87,12 +87,12 @@ public class Board {
         this.o_moves += this.board[3-c][r-1] == Piece.O ? 1 : 0;
         int wins = processBoardForWins(3-c, r-1);
         updateGameState(this.board[3-c][r-1] == Piece.X ? wins : 0, this.board[3-c][r-1] == Piece.O ? wins : 0);
-        //notifyPlayers(r, c);
+        notifyPlayers(r, c);
     }
 
     private void notifyPlayers(int r, int c) {
         for (Player p : listeners) {
-            //p.signal(r, c);
+            p.signal(r, c);
         }
     }
 
