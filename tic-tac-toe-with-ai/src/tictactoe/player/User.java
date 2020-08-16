@@ -26,7 +26,7 @@ public class User extends Player {
                 int promptX = Integer.parseInt(in.next());
                 int promptY = Integer.parseInt(in.next());
                 if (promptX >= 1 && promptX <= 3 && promptY >= 1 && promptY <= 3) {
-                    areCoordinatesValid = isAvailable(promptX, promptY);
+                    areCoordinatesValid = board.isAvailable(promptX, promptY);
                     if (!areCoordinatesValid) System.out.println("This cell is occupied! Choose another one!");
                     else board.makeMove(promptX, promptY);
                 } else System.out.println("Coordinates should be from 1 to 3!");

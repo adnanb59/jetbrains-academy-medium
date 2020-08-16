@@ -18,13 +18,8 @@ public abstract class Player {
     public void removeBoard() { this.board = null; }
     public abstract void move();
 
-    protected boolean isAvailable(int r, int c) {
-        return available.contains(9 - 3*c + r);
-    }
-
     public void signal(int r, int c) {
         int idx = available.indexOf(9 - 3*c + r);
         if (idx != -1) available.remove(idx);
-        System.out.println(available);
     }
 }
