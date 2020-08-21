@@ -17,7 +17,7 @@ public class Generator {
 
     public static void generate(Universe u) {
         int[][] state = u.getState();
-        int len = u.size;
+        int len = u.getSize();
         for (int i = 0; i < len; i++) {
             int N = i-1 == -1 ? len-1 : i-1, S = i+1 == len ? 0 : i+1;
             for (int j = 0; j < len; j++) {

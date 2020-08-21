@@ -3,9 +3,9 @@ package gameoflife;
 import java.util.Arrays;
 
 public class Universe {
-    public int[][] state;
-    public int size;
-    public int alive;
+    private int[][] state;
+    private final int size;
+    private int alive;
 
     public Universe(int N) {
         state = new int[N][N];
@@ -14,17 +14,6 @@ public class Universe {
         }
         size = N;
         alive = 0;
-    }
-
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < state.length; i++) {
-            for (int j = 0; j < state[0].length; j++) {
-                sb.append(state[i][j] == 1 ? "O" : " ");
-            }
-            sb.append("\n");
-        }
-        return sb.toString();
     }
 
     public void setCell(int r, int c, int v) {
@@ -39,5 +28,25 @@ public class Universe {
             for (int j = 0; j < size; j++) result[i][j] = state[i][j];
         }
         return result;
+    }
+
+    public int getSize() {
+        return size;
+    }
+
+    public int getAlive() {
+        return alive;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < state.length; i++) {
+            for (int j = 0; j < state[0].length; j++) {
+                sb.append(state[i][j] == 1 ? "O" : " ");
+            }
+            sb.append("\n");
+        }
+        return sb.toString();
     }
 }
