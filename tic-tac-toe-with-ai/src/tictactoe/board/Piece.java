@@ -1,5 +1,6 @@
 package tictactoe.board;
 
+/** Enum representing Tic-Tac-Toe game piece */
 public enum Piece {
     EMPTY('_'),
     X('X'),

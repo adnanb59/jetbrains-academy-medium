@@ -6,11 +6,18 @@ import java.util.Scanner;
 public class User extends Player {
     private Scanner in;
 
+    /**
+    * User constructor.
+    * Creates Human player for the game. 
+    */
     public User() {
         super();
         in = new Scanner(System.in);
     }
 
+    /**
+    * Allow user to make move on the board, checking to make sure they enter an available spot.
+    */
     @Override
     public void move() {
         boolean areCoordinatesValid = false;

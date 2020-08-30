@@ -17,9 +17,9 @@ public enum State {
     }
 
     /**
-     * String representation of State Enum
-     * @return statement associated with given state
-     */
+    * String representation of State Enum
+    * @return statement associated with given state
+    */
     @Override
     public String toString() {
         return this.statement;
