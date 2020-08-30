@@ -1,9 +1,13 @@
 import java.util.*;
 
+import processor.*;
+
 public class Runner {
+    // MAIN METHOD
     public static void main(String[] args) {
         Scanner in = new Scanner(System.in);
 
+        // Once program starts, show menu to give user options on matrix operations they can calculate
         boolean dontExit = true, displayPrompt = true;
         while (dontExit) {
             if (displayPrompt) {
@@ -16,6 +20,8 @@ public class Runner {
                 System.out.println("0. Exit");
                 displayPrompt = false;
             }
+            // If option is valid, do the operation (further input reading in specific functions) or exit
+            // If not, require user to enter a valid one
             try {
                 System.out.print("Your choice: ");
                 int v = Integer.parseInt(in.nextLine());
@@ -57,9 +63,16 @@ public class Runner {
         }
     }
 
+    /**
+    * Invert matrix inputted by user, if matrix is not a square matrix then exit.
+    * Assumption is that an invertible matrix is passed in.
+    * If a non-invertible matrix is passed in, then null is given as result
+    *
+    * @param in - Scanner to read input from user
+    */
     private static void invertMatrix(Scanner in) {
         Matrix m = createMatrix(in, "");
-        if (m.getCols() != m.getRows()) {
+        if (m.getCols() != m.getRows()) { // Ensure a square matrix was provided by user
             System.out.println("Enter a square matrix");
             return;
         }
@@ -68,6 +81,12 @@ public class Runner {
         System.out.println(result.toString());
     }
 
+    /**
+    * Display the determinant of a user inputted (square) matrix.
+    * If matrix is not square, then exit
+    *
+    * @param in - Scanner to read input from user
+    */
     private static void findDeterminant(Scanner in) {
         Matrix m = createMatrix(in, "");
         if (m.getCols() != m.getRows()) {
@@ -78,6 +97,11 @@ public class Runner {
         System.out.println(MatrixOperation.determinant(m) + "\n");
     }
 
+    /**
+    * Transpose a user inputted matrix based on transpose type specified by the user.
+    * 
+    * @param in - Scanner to read input from
+    */
     private static void transposeMatrix(Scanner in) {
         boolean hasPrompt = false;
         int res = 0;
@@ -85,6 +109,7 @@ public class Runner {
         System.out.println("2. Side diagonal");
         System.out.println("3. Vertical line");
         System.out.println("4. Horizontal line");
+        // Have user choose transpose type
         while (!hasPrompt) {
             try {
                 System.out.print("Your choice: ");
@@ -95,6 +120,7 @@ public class Runner {
             }
         }
 
+        // Create matrix and then transpose it
         Matrix m = createMatrix(in, "");
         Matrix ret = null;
         switch (res) {
@@ -117,9 +143,17 @@ public class Runner {
         System.out.println(ret);
     }
 
+    /**
+    * Utility function to create a matrix using user input.
+    *
+    * @param in - Scanner to read input from
+    * @param s - label to show user to indicate matrix being created
+    * @return Created Matrix object
+    */
     private static Matrix createMatrix(Scanner in, String s) {
         Matrix ret = null;
         boolean isNotValid = true;
+        // Have user enter appropriate dimensions for matrix to be created
         while (isNotValid) {
             try {
                 System.out.print("Enter size of " + s + " matrix: ");
@@ -135,6 +169,7 @@ public class Runner {
             }
         }
 
+        // Have user enter values for the matrix
         System.out.println("Enter " + s + " matrix:");
         for (int i = 0; i < ret.getRows();) {
             try {
@@ -151,6 +186,12 @@ public class Runner {
         return ret;
     }
 
+    /**
+    * Read two matrices from the user and multiply them together.
+    * If the first matrix's # of columns is not equal to the second matrix's # of rows, then exit
+    *
+    * @param in - Scanner to read input from
+    */
     private static void multMatrices(Scanner in) {
         Matrix m = createMatrix(in, "first");
         Matrix n = createMatrix(in, "second");
@@ -161,6 +202,11 @@ public class Runner {
         }
     }
 
+    /**
+    * Read two matrices from the user and them together, if the matrices don't have the same dimensions, then exit
+    *
+    * @param in - Scanner to read input from
+    */
     private static void addMatrices(Scanner in) {
         Matrix m = createMatrix(in, "first");
         Matrix n = createMatrix(in, "second");
@@ -171,9 +217,15 @@ public class Runner {
         }
     }
 
+    /**
+    * Take a user inputted matrix (M) and constant value (c) and do the scalar multiplication => c*M
+    *
+    * @param in - Scanner to read input from
+    */
     private static void scalarMultiply(Scanner in) {
         Matrix m = createMatrix(in, "");
         int c = 0;
+        // Read constant from user
         boolean hasEnteredConstant = false;
         while (!hasEnteredConstant) {
             try {
