@@ -6,12 +6,10 @@ Apparently, these are all of medium difficulty (for people who know the basics b
 
 These include:
 
-- **Numeral System Converter:** Convert numbers to different numeral systems (bases?)
-- **Smart Calculator:** Taking integer expressions and evaluating them
-- **Linear Equations Solver:** Library to solve linear equations w/ multiple variables and complex numbers
-- **Simple Search Engine:** Search for text data represented as lines
-- **Readability Score:** Tool to determine whether a text's readability 
-level
-- **Digit Recognition:** Building neural networks that can recognize 
-digits
-- **Sorting Tool:** Program to sort different types of data
+- **Numeral System Converter:** Convert numbers to different numeral systems (bases)
+- **Readability Score:** Tool to determine a text's readability level using various metrics
+- **Encryption-Decryption**: Encrypt and decrypt messages using the Caesar cipher
+- **Game Of Life**: Visualize Conway's Game of Life using Java's Swing library
+- **Tic-Tac-Toe w/ AI**: Building on previous Tic-Tac-Toe, employ AI of various difficulties to play
+- **Numeric Matrix Processor**: Complete different operations using matrices
+- **Error Correcting Encoder-Decoder**: Simulate the transfer of data, as well as simulating data corruption and correction using the (7,4) Hamming Code
