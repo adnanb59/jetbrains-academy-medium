@@ -4,7 +4,7 @@ This program will build on the simple [Tic-Tac-Toe](https://github.com/adnanizm/
 
 There are 3 levels of difficulty to the AI:
 - easy: AI makes a random move on the board
-- medium: AI looks for moves in this order of priority: winning move > defending move > free move (do to random spot)
+- medium: AI looks for moves in this order of priority: winning move > defending move > free move (move to random spot)
 - hard: Use [minimax](https://www.freecodecamp.org/news/how-to-make-your-tic-tac-toe-game-unbeatable-by-using-the-minimax-algorithm-9d690bad4b37) algorithm to calculate next best move (looking at most 3 moves ahead)
 
 The coordinates for the board can be found [here](https://github.com/adnanizm/jetbrains-academy-easy/blob/master/tic-tac-toe/README.md#tic-tac-toe-grid-board-coordinates).
